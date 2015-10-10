@@ -14,6 +14,8 @@ def genkey(keyfile):
     key = os.urandom(16)
     keyfile.write(key)
 
+    click.echo(click.style('Keygen successful!', bold = True, fg = 'green'))
+
 @cli.command(short_help = 'Encrypt file')
 @click.argument('keyfile', type = click.File('rb'))
 @click.argument('infile', type = click.File('rb'))
@@ -22,8 +24,7 @@ def enc(keyfile, infile, outfile):
     """Encrypts file with the given key"""
     key = keyfile.read(16)
 
-    algorithm = algorithms.ARC4(key)
-    cipher = Cipher(algorithm, mode=None, backend=default_backend())
+    cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
     encryptor = cipher.encryptor()
 
     pt = b""
@@ -36,6 +37,8 @@ def enc(keyfile, infile, outfile):
     ct = encryptor.update(pt)
     outfile.write(ct)
 
+    click.echo(click.style('Encryption successful!', bold = True, fg = 'green'))
+
 @cli.command(short_help = 'Decrypt file')
 @click.argument('keyfile', type = click.File('rb'))
 @click.argument('infile', type = click.File('rb'))
@@ -44,8 +47,7 @@ def dec(keyfile, infile, outfile):
     """Decrypts file with the given key"""
     key = keyfile.read(16)
 
-    algorithm = algorithms.ARC4(key)
-    cipher = Cipher(algorithm, mode=None, backend=default_backend())
+    cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
     decryptor = cipher.decryptor()
 
     ct = b""
@@ -57,6 +59,8 @@ def dec(keyfile, infile, outfile):
 
     dt = decryptor.update(ct)
     outfile.write(dt)
+
+    click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
 
 if __name__ == "__main__":
     cli()
