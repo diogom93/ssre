@@ -22,20 +22,11 @@ def RC4(key):
     S = KSA(key)
     return PRGA(S)
 
-def encrypt(key, text):
+def crypto(key, text):
     keystream = RC4(key)
 
-    ct = b""
+    t = b""
     for ch in text:
-        ct += bytes([int(ch) ^ next(keystream)])
+        t += bytes([int(ch) ^ next(keystream)])
 
-    return ct
-
-def decrypt(key, text):
-    keystream = RC4(key)
-
-    pt = b""
-    for ch in text:
-        pt += bytes([int(ch) ^ next(keystream)])
-
-    return pt
+    return t

@@ -29,8 +29,8 @@ def enc(keyfile, infile, outfile):
         if not chunk:
             break
         pt += chunk
-        
-    ct = rc4.encrypt(key, pt)
+
+    ct = rc4.crypto(key, pt)
     outfile.write(ct)
 
     click.echo(click.style('Encryption successful!', bold = True, fg = 'green'))
@@ -50,7 +50,7 @@ def dec(keyfile, infile, outfile):
             break
         ct += chunk
 
-    dt = rc4.decrypt(key, ct)
+    dt = rc4.crypto(key, ct)
     outfile.write(dt)
 
     click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
