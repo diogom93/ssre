@@ -8,8 +8,7 @@ def KSA(key):
 
     return S
 
-def PRGA(key):
-    S = KSA(key)
+def PRGA(S):
     i = 0
     j = 0
     while True:
