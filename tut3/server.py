@@ -2,6 +2,8 @@
 import click
 import socket
 import sys
+import crypto
+
 
 @click.command(short_help = 'Start server on folder')
 @click.argument('folder')
@@ -38,11 +40,15 @@ def server(folder):
         #Open file to write to
         f = open(folder+"/"+str(counter), 'wb')
 
-        #Get file 50 bytes at a time
+        '''#Get file 50 bytes at a time
         buffer_ = conn.recv(50)
         while len(buffer_) > 0:
             f.write(buffer_)
             buffer_ = conn.recv(50)
+
+        '''
+
+        crypto.decrypt_RC4(conn, f)
 
         f.close()
         print("Closed connection.")
