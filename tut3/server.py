@@ -1,49 +1,54 @@
-"""
-public class Server {
-    static public void main(String[] args) {
-        try {
-            // Create server socket
-            ServerSocket ss = new ServerSocket(4567);
 
-            // Start upload counter
-            int counter = 0;
+import click
+import socket
+import sys
 
-            System.out.println("Server started ...");
+@click.command(short_help = 'Start server on folder')
+@click.argument('folder')
+def server(folder):
+    HOST = ''
+    PORT = 4567
 
-            while(true) {
-                // Wait for client
-                Socket s = ss.accept();
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-                // Increment counter
-                counter++;
+    #Create server socket
+    try:
+        s.bind((HOST, PORT))
+    except socket.error as msg:
+        print('Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1])
+        sys.exit()
 
-                System.out.println("Accepted connection "+counter+".");
+    #Start listening on socket
+    s.listen(10)
+    print('Server started ...')
 
-                // Open file to write to
-                FileOutputStream fos = new FileOutputStream(args[0]+"/"+counter);
+    #Start upload counter
+    counter = 0;
 
-                // Get socket input stream
-                InputStream sis = s.getInputStream();
+    #now keep talking with the client
+    while 1:
+        #wait for client - conn is input stream
+        conn, addr = s.accept()
 
-                // Get file 50 bytes at a time
-                byte[] buffer = new byte[50];
-                int bytes_read = sis.read(buffer);
-                while (bytes_read > 0) {
-                   fos.write(buffer,0,bytes_read);
-                   bytes_read = sis.read(buffer);
-                }
+        #Increment counter
+        counter += 1
 
-                // Close socket
-                s.close();
-                System.out.println("Closed connection.");
+        print("Accepted connection "+str(counter)+".");
 
-                // Close file
-                fos.close();
-            }
+        #Open file to write to
+        f = open(folder+"/"+str(counter), 'wb')
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-}
-"""
+        #Get file 50 bytes at a time
+        buffer_ = conn.recv(50)
+        while len(buffer_) > 0:
+            f.write(buffer_)
+            buffer_ = conn.recv(50)
+
+        f.close()
+        print("Closed connection.")
+
+    s.close()
+
+
+if __name__ == '__main__':
+    server()
