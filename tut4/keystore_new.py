@@ -84,6 +84,14 @@ class KeyStore:
         print(self.keys)
 
     def getXMLText(nodelist):
+        """
+        Parses a list of XML nodes into text strings
+
+        Arguments:
+            nodeList    - The nodes to parse
+        Return:
+            String representation of node list
+        """
         rc = []
         for node in nodelist:
             if node.nodeType == node.TEXT_NODE:
@@ -112,7 +120,7 @@ class KeyStore:
         salt = salt_file.read()
         # derive
         kdf = PBKDF2HMAC(
-         algorithm=hashes.SHA1(),
+         algorithm=hashes.SHA256(),
          length=32,
          salt=salt,
          iterations=100000,
@@ -127,7 +135,7 @@ class KeyStore:
         salt = salt_file.read()
         # verify
         kdf = PBKDF2HMAC(
-         algorithm=hashes.SHA1(),
+         algorithm=hashes.SHA256(),
          length=32,
          salt=salt,
          iterations=100000,
@@ -140,6 +148,55 @@ class KeyStore:
             return False
 
         return True
+
+    def __encrypt_and_write(string, password):
+        """
+        Encrypts string using the given password expanded as a key and writes it into a file
+
+        Arguments:
+            string      - The string to encrypt and write
+            password    - Tha password to expand and use as key
+        """
+        if(type(password) is str):
+            master_password = str.encode(password)
+
+        key = __generate_key(password)
+
+        file_ = open(filename)
+
+        cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
+        encryptor = cipher.encryptor()
+
+        ct = encryptor.update(key)
+
+        file_.write(ct)
+
+    def __read_and_decrypt(filename, password):
+        """
+        Reads and decrypts files using the given password expanded as a key
+
+        Arguments:
+            filename    - The filename to open and decrypt
+            password    - Tha password to expand and use as key
+        Returns:
+            String containing decrypted contents
+        """
+        if(type(password) is str):
+            master_password = str.encode(password)
+
+        key = __generate_key(password)
+
+        file_ = open(filename)
+
+        cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
+        decryptor = cipher.decryptor()
+
+        ct = file_.read()
+
+        dt = decryptor.update(ct)
+
+        return dt
+
 
     def store_key(key, keystore_file, master_password):
         """Encrypts file with the given password using RC4"""
