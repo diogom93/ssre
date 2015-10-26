@@ -15,6 +15,7 @@ October 2015
 import pydoc
 import os
 import xml.dom.minidom
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
@@ -78,10 +79,15 @@ class KeyStore:
         Currently reading plainfiles only
         """
         #decryption goes here
-        file_ = open(self.file_name)
-        self.__load_xml_data(file_.read())
+        #file_ = open(self.file_name)
+        dec_str = self.__read_and_decrypt(self.file_name, 'bosspls')
+        self.__load_xml_data(dec_str)
 
-        print(self.keys)
+        for k, val in self.keys.items():
+            print(val)
+            print(val.alias)
+            print(val.public_key)
+            print("---")
 
     def getXMLText(nodelist):
         """
@@ -149,7 +155,7 @@ class KeyStore:
 
         return True
 
-    def __encrypt_and_write(string, password):
+    def __encrypt_and_write(self, string, password):
         """
         Encrypts string using the given password expanded as a key and writes it into a file
 
@@ -158,11 +164,11 @@ class KeyStore:
             password    - Tha password to expand and use as key
         """
         if(type(password) is str):
-            master_password = str.encode(password)
+            password = str.encode(password)
 
-        key = __generate_key(password)
+        key = KeyStore.__generate_key(password)
 
-        file_ = open(filename)
+        file_ = open(filename, 'wb')
 
         cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
         encryptor = cipher.encryptor()
@@ -171,7 +177,7 @@ class KeyStore:
 
         file_.write(ct)
 
-    def __read_and_decrypt(filename, password):
+    def __read_and_decrypt(self, filename, password):
         """
         Reads and decrypts files using the given password expanded as a key
 
@@ -182,11 +188,11 @@ class KeyStore:
             String containing decrypted contents
         """
         if(type(password) is str):
-            master_password = str.encode(password)
+            password = str.encode(password)
 
-        key = __generate_key(password)
+        key = KeyStore.__generate_key(password)
 
-        file_ = open(filename)
+        file_ = open(filename, 'rb')
 
         cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
         decryptor = cipher.decryptor()
@@ -195,7 +201,7 @@ class KeyStore:
 
         dt = decryptor.update(ct)
 
-        return dt
+        return dt.decode("utf-8")
 
 
     def store_key(key, keystore_file, master_password):
@@ -236,4 +242,25 @@ class KeyStore:
         keystore_file.close()
         return __verify(rec_key, good_key)
 
-x = KeyStore('plain_keystore.xml', os.path.abspath(''))
+    def utils_encrypt_plainfile(filename, password, output):
+        file_ = open(filename, 'rb')
+        file_out = open(output, 'wb')
+
+        if(type(password) is str):
+            password = str.encode(password)
+
+        key = KeyStore.__generate_key(password)
+
+        cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
+        encryptor = cipher.encryptor()
+
+        bite_stream = file_.read()
+
+        ct = encryptor.update(bite_stream)
+
+        file_out.write(ct)
+
+
+
+x = KeyStore('enc_key.store', os.path.abspath(''))
+#KeyStore.utils_encrypt_plainfile('plain_keystore.xml', 'bosspls', 'enc_key.store')

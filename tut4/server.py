@@ -3,7 +3,7 @@ import click
 import socket
 import sys
 import crypto
-
+import sealed_object
 
 @click.command(short_help = 'Start server on folder')
 @click.argument('folder')
