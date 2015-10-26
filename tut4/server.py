@@ -40,15 +40,9 @@ def server(folder):
         #Open file to write to
         f = open(folder+"/"+str(counter), 'wb')
 
-        '''#Get file 50 bytes at a time
-        buffer_ = conn.recv(50)
-        while len(buffer_) > 0:
-            f.write(buffer_)
-            buffer_ = conn.recv(50)
+        sk = crypto.accept_session_key(conn, 'enc_key.store')
 
-        '''
-
-        crypto.decrypt_RC4(conn, f)
+        crypto.decrypt_AES_with_key(conn, f, sk)
 
         f.close()
         print("Closed connection.")
