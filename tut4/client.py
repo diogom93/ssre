@@ -1,8 +1,10 @@
+import os
 import click
 import socket
+from sealed_object import SealedObject
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-import sealed_object
+from keystore_new import KeyStore
 
 @click.command()
 @click.argument('filename', type = click.File('rb'))
@@ -10,7 +12,7 @@ def cli(filename):
     """Send file over to server"""
     s = socket.socket()
 
-    host = '172.30.7.187'
+    host = '172.30.31.163'
     port = 4567
 
     click.echo(click.style('Connecting...', bold = True, fg = 'yellow'))
@@ -26,10 +28,19 @@ def cli(filename):
             break
         pt += chunk
 
-    key = open("key.txt", "rb").read(16)
-    cipher = Cipher(algorithms.ARC4(key), mode=None, backend=default_backend())
+    ks = KeyStore('enc_key.store', os.path.abspath(''))
+    key = str.encode(ks.keys['mother_base_key'].public_key)
+
+    sk = os.urandom(16)
+
+    so = SealedObject()
+    cipher = Cipher(algorithms.AES(key), mode=modes.CBC(open('iv.txt', 'rb').read(16)), backend=default_backend())
+    csk = so.seal(sk, cipher)
+    s.send(csk)
+
+    cipher = Cipher(algorithms.AES(sk), mode=modes.CBC(open('iv.txt', 'rb').read(16)), backend=default_backend())
     encryptor = cipher.encryptor()
-    ct = encryptor.update(pt)
+    ct = encryptor.update(pt)# + encryptor.finalize()
 
     s.send(ct)
     s.close()

@@ -83,12 +83,6 @@ class KeyStore:
         dec_str = self.__read_and_decrypt(self.file_name, 'bosspls')
         self.__load_xml_data(dec_str)
 
-        for k, val in self.keys.items():
-            print(val)
-            print(val.alias)
-            print(val.public_key)
-            print("---")
-
     def getXMLText(nodelist):
         """
         Parses a list of XML nodes into text strings
@@ -262,5 +256,5 @@ class KeyStore:
 
 
 
-x = KeyStore('enc_key.store', os.path.abspath(''))
-#KeyStore.utils_encrypt_plainfile('plain_keystore.xml', 'bosspls', 'enc_key.store')
+#x = KeyStore('enc_key.store', os.path.abspath(''))
+KeyStore.utils_encrypt_plainfile('plain_keystore.xml', 'bosspls', 'enc_key.store')
