@@ -1,4 +1,7 @@
-import pickle
+try:
+   import cPickle as pickle
+except:
+   import pickle
 
 class SealedObject:
 
@@ -8,18 +11,19 @@ class SealedObject:
         self.encrypted_ = None
 
     def __serialize(obj):
-        return pickle.dumps(obj)
+        return pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
 
     def __deserialize(ser):
         return pickle.loads(ser)
 
     def __encrypt(cipher, ser):
         encryptor = cipher.encryptor()
-        return encryptor.update(ser)# + encryptor.finalize()
+        ct = encryptor.update(ser) + encryptor.finalize()
+        return ct
 
     def __decrypt(cipher, enc):
         decryptor = cipher.decryptor()
-        return decryptor.update(enc)# + decryptor.finalize()
+        return decryptor.update(enc) + decryptor.finalize()
 
     def seal(self, obj, cipher):
         self.object_    = obj

@@ -7,7 +7,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
 modes_ls = dict(
-    CBC = modes.CBC
+    CBC = modes.CBC,
+    CFB = modes.CFB8
 )
 
 def decrypt_RC4(connection, outfile):
@@ -55,32 +56,36 @@ def decrypt_AES(connection, outfile, keystore, mode_name='CBC'):
 
     click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
 
-def accept_session_key(connection, keystore, mode_name='CBC'):
+def accept_session_key(connection, keystore, mode_name='CFB'):
     iv  = open("iv.txt", 'rb').read(16)
 
     ks = KeyStore(keystore, os.path.abspath(''))
     key = str.encode(ks.keys['mother_base_key'].public_key)
 
-
-    click.echo(click.style('DEBUG : Decrypting session key with keystore key: %s' % key, bold = True, fg = 'yellow'))
-
     mode_ = modes_ls[mode_name](iv)
 
     ct = b""
-    while True:
-        chunk = connection.recv(50)
-        if not chunk:
-            break
-        ct += chunk
+    #while True:
+    chunk = connection.recv(512)
+        #if not chunk:
+            #break
+    ct += chunk
+
+    click.echo(click.style('DEBUG : Decrypting session key with keystore key: %s' % key, bold = True, fg = 'yellow'))
 
     cipher = Cipher(algorithms.AES(key), mode_, backend=default_backend())
     so = SealedObject()
     sk = so.unseal(ct, cipher)
     click.echo(click.style('DEBUG : Obtained session key: %s' % sk, bold = True, fg = 'yellow'))
+
+    #send private key
+    connection.sendall(ct)
+
+
     #click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
     return sk
 
-def decrypt_AES_with_key(connection, outfile, key, mode_name='CBC'):
+def decrypt_AES_with_key(connection, outfile, key, mode_name='CFB'):
     iv  = open("iv.txt", 'rb').read(16)
 
     mode_ = modes_ls[mode_name](iv)
@@ -97,7 +102,7 @@ def decrypt_AES_with_key(connection, outfile, key, mode_name='CBC'):
             break
         ct += chunk
 
-    dt = decryptor.update(ct)
+    dt = decryptor.update(ct) + decryptor.finalize()
     outfile.write(dt)
 
     click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
