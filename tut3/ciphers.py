@@ -26,7 +26,7 @@ class KeyRC4(KeyAlgorithm):
         self.cipher = Cipher(self.algorithm, self.mode, self.backend)
 
 class KeyAES(KeyAlgorithm):
-    def __init__(self, key, mode):
+    def __init__(self, key, mode, padding):
         self.iv = os.urandom(16)
         self.algorithm = algorithms.AES(key)
         self.mode = modes_list[mode](self.iv)
@@ -34,15 +34,9 @@ class KeyAES(KeyAlgorithm):
 
         self.cipher = Cipher(self.algorithm, self.mode, self.backend)
 
-    def encrypt(self, text):
-        text = self.padding(text)
-        ct = super(KeyAES, self).encrypt(text)
-        return ct
-
-    def decrypt(self, text):
-        pt = super(KeyAES, self).decrypt(text)
-        pt = self.unpadding(pt)
-        return pt
+        if padding == True:
+            setattr(KeyAES, 'encrypt', pad_encrypt)
+            setattr(KeyAES, 'decrypt', pad_decrypt)
 
     def padding(self, text):
         padder = padding.PKCS7(128).padder()
@@ -55,3 +49,13 @@ class KeyAES(KeyAlgorithm):
         data = unpadder.update(text)
         data += unpadder.finalize()
         return data
+
+def pad_encrypt(self, text):
+    text = self.padding(text)
+    ct = super(KeyAES, self).encrypt(text)
+    return ct
+
+def pad_decrypt(self, text):
+    pt = super(KeyAES, self).decrypt(text)
+    pt = self.unpadding(pt)
+    return pt
