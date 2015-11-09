@@ -1,4 +1,4 @@
-import os, sys
+import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
@@ -7,11 +7,17 @@ modes_list = {'CBC': modes.CBC, 'CFB': modes.CFB, 'CFB8': modes.CFB8}
 
 class KeyAlgorithm:
     def encrypt(self, text):
+        if type(text) == str:
+            text = bytes(text, encoding = 'UTF-8')
+
         enc = self.cipher.encryptor()
         ct = enc.update(text) + enc.finalize()
         return ct
 
     def decrypt(self, text):
+        if type(text) == str:
+            text = bytes(text, encoding = 'UTF-8')
+
         dec = self.cipher.decryptor()
         pt = dec.update(text) + dec.finalize()
         return pt
@@ -38,24 +44,24 @@ class KeyAES(KeyAlgorithm):
             setattr(KeyAES, 'encrypt', pad_encrypt)
             setattr(KeyAES, 'decrypt', pad_decrypt)
 
-    def padding(self, text):
+    def __padding(self, text):
         padder = padding.PKCS7(128).padder()
         padded_data = padder.update(text)
         padded_data += padder.finalize()
         return padded_data
 
-    def unpadding(self, text):
+    def __unpadding(self, text):
         unpadder = padding.PKCS7(128).unpadder()
         data = unpadder.update(text)
         data += unpadder.finalize()
         return data
 
 def pad_encrypt(self, text):
-    text = self.padding(text)
+    text = self.__padding(text)
     ct = super(KeyAES, self).encrypt(text)
     return ct
 
 def pad_decrypt(self, text):
     pt = super(KeyAES, self).decrypt(text)
-    pt = self.unpadding(pt)
+    pt = self.__unpadding(pt)
     return pt
