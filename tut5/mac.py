@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives import hashes, hmac
 class MAC:
     def __init__(self, key):
         self.mac = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+        self.counter = 0
 
     def genMAC(self, text, counter):
         if type(text) == str:

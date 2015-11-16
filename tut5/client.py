@@ -48,9 +48,9 @@ def cli(filename):
     ct = cipher.encrypt(pt)
 
     hmac = mac.MAC(sk2)
-    mac = hmac.genMAC(ct, 0)
+    mac1 = hmac.genMAC(ct, 0)
 
-    pkt = packet.Packet(ct, None, cipher.iv)
+    pkt = packet.Packet(ct, mac1, cipher.iv)
 
     so = SealedObject()
     csk = so.serialize(pkt)

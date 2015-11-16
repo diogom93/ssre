@@ -45,7 +45,11 @@ def server(folder):
         sess_k = sk[0:16]
         mac_k  = sk[16:32]
 
+        hmac = mac.MAC(m_key)
+
         crypto.decrypt_AES_with_key_mac(conn, f, sess_k, mac_k)
+
+        hmac.counterUp()
 
         f.close()
         print("Closed connection.")

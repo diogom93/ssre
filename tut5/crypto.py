@@ -1,5 +1,5 @@
 
-import click, ciphers
+import click, ciphers, mac
 from keystore_new import *
 import os
 from packet import Packet
@@ -83,11 +83,11 @@ def accept_session_packet(connection, keystore, mode_name='CFB'):
     #click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
     return sk
 
-def decrypt_AES_with_key_mac(connection, outfile, s_key, m_key, mode_name='CFB8'):
+def decrypt_AES_with_key_mac(connection, outfile, s_key, hmac, mode_name='CFB8'):
 
     ct = b""
     while True:
-        chunk = connection.recv(100)
+        chunk = connection.recv(50)
         if not chunk:
             break
         ct += chunk
@@ -96,8 +96,7 @@ def decrypt_AES_with_key_mac(connection, outfile, s_key, m_key, mode_name='CFB8'
     packet = so.deserialize(ct)
 
     #verify mac
-    hmac = mac.MAC(m_key)
-    if hmac.verMAC(packet.msg, 0, packet.mac):
+    if not hmac.verMAC(packet.msg, packet.mac):
         #reject
         click.echo(click.style('Decryptionphailed', bold = True, fg = 'red'))
     else:
