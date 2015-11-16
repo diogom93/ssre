@@ -27,7 +27,7 @@ class SealedObject:
         self.serial_    = None
         self.encrypted_ = None
 
-    def __serialize(obj):
+    def __serialize_(obj):
         """
         Serializes a Python object into bytes.
         Internal use only.
@@ -39,7 +39,7 @@ class SealedObject:
         """
         return pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
 
-    def __deserialize(ser):
+    def __deserialize_(ser):
         """
         Deserializes bytes into a Python object.
         Internal use only.
@@ -90,7 +90,7 @@ class SealedObject:
             Base64 String representing the sealed object
         """
         self.object_    = obj
-        self.serial_    = SealedObject.__serialize(obj)
+        self.serial_    = SealedObject.__serialize_(obj)
         self.encrypted_ = SealedObject.__encrypt(cipher, self.serial_)
         return self.encrypted_
 
@@ -106,5 +106,33 @@ class SealedObject:
         """
         self.encrypted_ = enc
         self.serial_    = SealedObject.__decrypt(cipher, self.encrypted_)
-        self.object_    = SealedObject.__deserialize(self.serial_)
+        self.object_    = SealedObject.__deserialize_(self.serial_)
+        return self.object_
+
+    def serialize(self, obj):
+        """
+        Seals an external object into the referenced SealedObject using simple serialization.
+
+        Arguments:
+            obj     - external object to be encapsulated
+        Return:
+            Base64 String representing the sealed object
+        """
+        self.object_    = obj
+        self.serial_    = SealedObject.__serialize_(obj)
+        self.encrypted_ = None
+        return base64.b64encode(self.serial_)
+
+    def deserialize(self, ser):
+        """
+        Unseals the referenced SealedObject into an external object using simple deserialization.
+
+        Arguments:
+            ser     - Base64 String representing the encapsulated object
+        Return:
+            External unsealed object
+        """
+        self.encrypted_ = None
+        self.serial_    = base64.b64decode(ser)
+        self.object_    = SealedObject.__deserialize_(self.serial_)
         return self.object_

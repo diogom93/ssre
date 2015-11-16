@@ -40,9 +40,12 @@ def server(folder):
         #Open file to write to
         f = open(folder+"/"+str(counter), 'wb')
 
-        sk = crypto.accept_session_key(conn, 'enc_key.store')
+        sk = crypto.accept_session_packet(conn, 'enc_key.store')
 
-        crypto.decrypt_AES_with_key(conn, f, sk)
+        sess_k = sk[0:16]
+        mac_k  = sk[16:32]
+
+        crypto.decrypt_AES_with_key_mac(conn, f, sess_k, mac_k)
 
         f.close()
         print("Closed connection.")
