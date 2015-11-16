@@ -146,3 +146,31 @@ class SealedObject:
         self.serial_    = private_key.decrypt( base64.b64decode(self.encrypted_), default_padding())
         self.object_    = SealedObject.__deserialize(self.serial_)
         return self.object_
+
+    def serialize(self, obj):
+        """
+        Seals an external object into the referenced SealedObject using simple serialization.
+
+        Arguments:
+            obj     - external object to be encapsulated
+        Return:
+            Base64 String representing the sealed object
+        """
+        self.object_    = obj
+        self.serial_    = SealedObject.__serialize(obj)
+        self.encrypted_ = None
+        return base64.b64encode(self.serial_)
+
+    def deserialize(self, ser):
+        """
+        Unseals the referenced SealedObject into an external object using simple deserialization.
+
+        Arguments:
+            ser     - Base64 String representing the encapsulated object
+        Return:
+            External unsealed object
+        """
+        self.encrypted_ = None
+        self.serial_    = base64.b64decode(ser)
+        self.object_    = SealedObject.__deserialize(self.serial_)
+        return self.object_

@@ -1,5 +1,5 @@
 
-import click
+import click, ciphers, mac
 from keystore_new import *
 import os
 from sealed_object import SealedObject
@@ -100,6 +100,30 @@ def negotiate_asymmetric_session_key(connection, private_key, public_key):
     sk = so.unseal_asym(csk, private_key)
 
     return sk
+
+def decrypt_AES_with_key_mac(connection, outfile, s_key, hmac, mode_name='CFB8'):
+
+    ct = b""
+    while True:
+        chunk = connection.recv(50)
+        if not chunk:
+            break
+        ct += chunk
+
+    so = SealedObject()
+    packet = so.deserialize(ct)
+
+    #verify mac
+    if not hmac.verMAC(packet.msg, 0,  packet.mac):
+        #reject
+        click.echo(click.style('Decryptionphailed', bold = True, fg = 'red'))
+    else:
+        cipher = ciphers.KeyAES(s_key, 'CFB8', False, packet.iv)
+        dt = cipher.decrypt(packet.msg)
+
+        outfile.write(dt)
+
+        click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
 
 def decrypt_AES_with_key(connection, outfile, key, mode_name='CFB'):
     iv  = open("iv.txt", 'rb').read(16)

@@ -2,6 +2,7 @@ import os
 import click
 import socket
 import time
+import ciphers, packet, mac
 from sealed_object import SealedObject
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -36,19 +37,28 @@ def cli(filename):
 
     rsa_public_key = serialization.load_pem_public_key(pem, backend=default_backend())
 
-    sk = os.urandom(16)
+    sk = os.urandom(32)
+    sk1 = sk[0:16]
+    sk2 = sk[16:32]
 
     so = SealedObject()
     csk = so.seal_asym(sk, rsa_public_key)
     s.sendall(csk)
 
-    cipher = Cipher(algorithms.AES(sk), mode=modes.CFB8(open('iv.txt', 'rb').read(16)), backend=default_backend())
-    encryptor = cipher.encryptor()
-    ct = encryptor.update(pt) + encryptor.finalize()
+    cipher = ciphers.KeyAES(sk1, 'CFB8', False)
+    ct = cipher.encrypt(pt)
 
-    s.send(ct)
+    hmac = mac.MAC(sk2)
+    mac1 = hmac.genMAC(ct, 0)
+
+    pkt = packet.Packet(ct, mac1, cipher.iv)
+
+    so = SealedObject()
+    csk = so.serialize(pkt)
+
+    s.send(csk)
+
     s.close()
-
 
     click.echo(click.style('File sent!', bold = True, fg = 'green'))
 

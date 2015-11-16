@@ -3,6 +3,7 @@ import click
 import socket
 import sys
 import crypto
+import mac
 import sealed_object
 
 @click.command(short_help = 'Start server on folder')
@@ -45,9 +46,9 @@ def server(folder):
         sess_k = sk[0:16]
         mac_k  = sk[16:32]
 
-        hmac = mac.MAC(m_key)
+        hmac = mac.MAC(mac_k)
 
-        crypto.decrypt_AES_with_key_mac(conn, f, sess_k, mac_k)
+        crypto.decrypt_AES_with_key_mac(conn, f, sess_k, hmac)
 
         hmac.counterUp()
 

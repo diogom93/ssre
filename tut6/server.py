@@ -3,6 +3,7 @@ import click
 import socket
 import sys
 import ciphers
+import mac
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 import crypto
@@ -48,8 +49,12 @@ def server(folder):
         #Open file to write to
         f = open(folder+"/"+str(counter), 'wb')
 
-        crypto.decrypt_AES_with_key(conn, f, sk)
+        sess_k = sk[0:16]
+        mac_k  = sk[16:32]
 
+        hmac = mac.MAC(mac_k)
+
+        crypto.decrypt_AES_with_key_mac(conn, f, sess_k, hmac)
         f.close()
         print("Closed connection.")
 
