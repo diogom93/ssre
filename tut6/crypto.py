@@ -8,84 +8,6 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-modes_ls = dict(
-    CBC = modes.CBC,
-    CFB = modes.CFB8
-)
-
-def decrypt_RC4(connection, outfile):
-
-    ks = KeyStore('enc_key.store', os.path.abspath(''))
-    key = str.encode(ks.keys['mother_base_key'].public_key)[0:15]
-
-    print(key)
-
-    cipher = Cipher(algorithms.ARC4(key), None, backend=default_backend())
-    decryptor = cipher.decryptor()
-
-    ct = b""
-    while True:
-        chunk = connection.recv(50)
-        if not chunk:
-            break
-        ct += chunk
-
-    dt = decryptor.update(ct)
-    outfile.write(dt)
-
-    click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
-
-def decrypt_AES(connection, outfile, keystore, mode_name='CBC'):
-    iv  = open("iv.txt", 'rb').read(16)
-
-    ks = KeyStore(keystore, os.path.abspath(''))
-    key = str.encode(ks.keys['mother_base_key'].public_key)
-
-    mode_ = modes_ls[mode_name](iv)
-
-    cipher = Cipher(algorithms.AES(key), mode_, backend=default_backend())
-    decryptor = cipher.decryptor()
-
-    ct = b""
-    while True:
-        chunk = connection.recv(50)
-        if not chunk:
-            break
-        ct += chunk
-
-    dt = decryptor.update(ct)
-    outfile.write(dt)
-
-    click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
-
-def accept_session_key(connection, keystore, mode_name='CFB'):
-    iv  = open("iv.txt", 'rb').read(16)
-
-    ks = KeyStore(keystore, os.path.abspath(''))
-    key = str.encode(ks.keys['mother_base_key'].public_key)
-
-    mode_ = modes_ls[mode_name](iv)
-
-    ct = b""
-    #while True:
-    chunk = connection.recv(512)
-        #if not chunk:
-            #break
-    ct += chunk
-
-    click.echo(click.style('DEBUG : Decrypting session key with keystore key: %s' % key, bold = True, fg = 'yellow'))
-
-    cipher = Cipher(algorithms.AES(key), mode_, backend=default_backend())
-    so = SealedObject()
-    sk = so.unseal(ct, cipher)
-    click.echo(click.style('DEBUG : Obtained session key: %s' % sk, bold = True, fg = 'yellow'))
-
-    #send private key
-    connection.sendall(ct)
-
-
-    #click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
-    return sk
 
 def negotiate_asymmetric_session_key(connection, private_key, public_key):
 
@@ -101,7 +23,7 @@ def negotiate_asymmetric_session_key(connection, private_key, public_key):
 
     return sk
 
-def decrypt_AES_with_key_mac(connection, outfile, s_key, hmac, mode_name='CFB8'):
+def decrypt_AES_with_key_mac(connection, outfile, s_key, hmac):
 
     ct = b""
     while True:
@@ -124,25 +46,3 @@ def decrypt_AES_with_key_mac(connection, outfile, s_key, hmac, mode_name='CFB8')
         outfile.write(dt)
 
         click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
-
-def decrypt_AES_with_key(connection, outfile, key, mode_name='CFB'):
-    iv  = open("iv.txt", 'rb').read(16)
-
-    mode_ = modes_ls[mode_name](iv)
-
-    click.echo(click.style('DEBUG : Decrypting with key %s' % key, bold = True, fg = 'yellow'))
-
-    cipher = Cipher(algorithms.AES(key), mode_, backend=default_backend())
-    decryptor = cipher.decryptor()
-
-    ct = b""
-    while True:
-        chunk = connection.recv(50)
-        if not chunk:
-            break
-        ct += chunk
-
-    dt = decryptor.update(ct) + decryptor.finalize()
-    outfile.write(dt)
-
-    click.echo(click.style('Decryption successful!', bold = True, fg = 'green'))
