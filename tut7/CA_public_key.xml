@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<keypair>
+    <private_key name="Generated RSA"></private_key>
+    <public_key name="Derived RSA">-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAraNtzNWpldOe1KhV8jhk
+M0Uy/3TvRybLODf5O3wQRgfh0CU+fgrW4ZW22VWpzvnucE/fO1dMPjg5s6VIItsU
+pydFvyAsIskdgGQowfm7Pa+/JPgdi/+L84OredGvvJ1lMGsVnNoToDJPjG7g1KGl
+Gb8MEIx1Cl+npE57SpRbDeAutnq2oROX26DPrTwxVjwP866GtvCGM7dsW5WOa7FR
+cKQ+6HSAU/s1vx3sNJN0Sk7KSA5y/Gx1aKD2NC9qfCh6+2Jinj90LFWfsl9yjiFg
+1R4+yZ0fu2x0u5CzDh+KI4X+IPRZjk4NRLrcQ/qZLY2pLrEeMOcP2Q1vCIh5PfWE
+TQIDAQAB
+-----END PUBLIC KEY-----
+</public_key>
+</keypair>
