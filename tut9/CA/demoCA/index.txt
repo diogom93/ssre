@@ -1,0 +1,2 @@
+V	161206104444Z		00	unknown	/C=PT/O=Universidade do Porto/OU=MIEEC/CN=Diogo Martins/emailAddress=ee11124@fe.up.pt
+V	161206104835Z		01	unknown	/C=PT/O=Universidade do Porto/OU=MIEEC/CN=Jo\xC3\xA3o Meira/emailAddress=ee11081@fe.up.pt
